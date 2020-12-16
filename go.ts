@@ -4,9 +4,10 @@ console.log("🦕");
 
 // 1a
 const mapped: { [key: number]: number } = {};
+const target = 2020;
 input.forEach((entry) => {
-  mapped[entry] = 2020 - entry;
+  mapped[entry] = target - entry;
   if (mapped[mapped[entry]]) {
-    console.log(entry * (2020 - entry));
+    console.log(entry * (target - entry));
   }
 });
