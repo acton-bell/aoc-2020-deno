@@ -2,6 +2,7 @@ import { input as day1Input } from "./day1.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
+import { input as day5Input } from "./day5.ts";
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
@@ -127,7 +128,7 @@ const isValidPassport1 = (passport: string) =>
   }, RequiredFields.none) & RequiredFields.allButCid) ===
     RequiredFields.allButCid;
 
-console.log(day4Input.split("\n\n").filter(isValidPassport1).length);
+console.log("4a", day4Input.split("\n\n").filter(isValidPassport1).length);
 
 // 4b
 // Count valid passports under stricter requirements.
@@ -178,4 +179,39 @@ const isValidPassport2 = (passport: string) => {
   return (hash & RequiredFields.allButCid) === RequiredFields.allButCid;
 };
 
-console.log(day4Input.split("\n\n").filter(isValidPassport2).length);
+console.log("4b", day4Input.split("\n\n").filter(isValidPassport2).length);
+
+// 5a
+// Given a string of a given length, replace `zeroes` characters with `0`s and all others with `1`s.
+const getBinaryConverter = (zeroes: string) =>
+  (value: string) => {
+    const chars = [...value];
+    for (let index = 0; index < chars.length; index++) {
+      chars[index] = chars[index] === zeroes ? "0" : "1";
+    }
+    return chars.join("");
+  };
+const columnToBinary = getBinaryConverter("L");
+const rowToBinary = getBinaryConverter("F");
+const getSeatId = (seat: string) =>
+  parseInt(rowToBinary(seat.slice(0, 7)), 2) * 8 +
+  parseInt(columnToBinary(seat.slice(7, 10)), 2);
+
+const descendingSeatIds = day5Input.map(getSeatId).sort((a, b) => b - a);
+console.log("5a", descendingSeatIds[0]);
+console.log(
+  "5b",
+  (() => {
+    const ascendingSeatIds = descendingSeatIds.reverse();
+    let previousSeatId = ascendingSeatIds.shift()!;
+    for (const nextSeatId of ascendingSeatIds) {
+      if (nextSeatId !== previousSeatId + 1) {
+        return previousSeatId + 1;
+      } else {
+        previousSeatId = nextSeatId;
+      }
+    }
+
+    return undefined;
+  })(),
+);
