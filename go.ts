@@ -1,6 +1,7 @@
 import { input as day1Input } from "./day1.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
+import { input as day4Input } from "./day4.ts";
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
@@ -99,3 +100,82 @@ console.log(
     return total * countTrees(day3Input, xi, yi);
   }, 1),
 );
+
+// 4a
+// Count valid passports.
+enum RequiredFields {
+  none = 0,
+  byr = 1 << 0,
+  iyr = 1 << 1,
+  eyr = 1 << 2,
+  hgt = 1 << 3,
+  hcl = 1 << 4,
+  ecl = 1 << 5,
+  pid = 1 << 6,
+  cid = 1 << 7,
+  all = ~(~0 << 8),
+  allButCid = ~(~0 << 7),
+}
+const isValidPassport1 = (passport: string) =>
+  (passport.split("\n").reduce((fieldHash, line) => {
+    line.split(" ").forEach((field) => {
+      fieldHash |= RequiredFields[
+        field.split(":")[0] as keyof typeof RequiredFields
+      ];
+    });
+    return fieldHash;
+  }, RequiredFields.none) & RequiredFields.allButCid) ===
+    RequiredFields.allButCid;
+
+console.log(day4Input.split("\n\n").filter(isValidPassport1).length);
+
+// 4b
+// Count valid passports under stricter requirements.
+
+const isValidField = (key: string, value: string) => {
+  const asNumber = parseInt(value); // <- Not as efficient as doing it inside each case, but less code 🙃
+  switch (key) {
+    case "byr":
+      return asNumber >= 1920 && asNumber <= 2002;
+    case "iyr":
+      return asNumber >= 2010 && asNumber <= 2020;
+    case "eyr":
+      return asNumber >= 2020 && asNumber <= 2030;
+    case "hgt":
+      return value.slice(-2) === "cm"
+        ? (asNumber >= 150 && asNumber <= 193)
+        : (asNumber >= 59 && asNumber <= 76);
+    case "hcl":
+      // Performance optimisation: if the value is not length 7, don't need to execute the regex at all ->
+      return value.length === 7 && /#[0-9a-f]{6}/.test(value);
+    case "ecl":
+      return ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].includes(value);
+    case "pid":
+      return value.length === 9 && !isNaN(asNumber);
+  }
+
+  // Unhandled field -> no additional checks:
+  return true;
+};
+
+const isValidPassport2 = (passport: string) => {
+  const lines = passport.split("\n");
+  let hash = RequiredFields.none;
+  for (const line of lines) {
+    const fields = line.split(" ");
+    for (const field of fields) {
+      const [key, value] = field.split(":");
+      if (!isValidField(key, value)) {
+        return false;
+      }
+
+      hash |= RequiredFields[
+        key as keyof typeof RequiredFields
+      ];
+    }
+  }
+
+  return (hash & RequiredFields.allButCid) === RequiredFields.allButCid;
+};
+
+console.log(day4Input.split("\n\n").filter(isValidPassport2).length);
