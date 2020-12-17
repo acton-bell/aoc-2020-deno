@@ -3,6 +3,7 @@ import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
 import { input as day5Input } from "./day5.ts";
+import { input as day6Input } from "./day6.ts";
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
@@ -214,4 +215,17 @@ console.log(
 
     return undefined;
   })(),
+);
+
+// 6a
+console.log(
+  "6a",
+  day6Input.split("\n\n").map((group) =>
+    Object.keys(
+      group.split("\n").join("").split("").reduce((map, char) => {
+        map[char] = 1;
+        return map;
+      }, {} as { [char: string]: number }),
+    ).length
+  ).reduce((a, b) => a + b, 0),
 );
