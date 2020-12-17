@@ -222,10 +222,10 @@ console.log(
   "6a",
   day6Input.split("\n\n").map((group) =>
     Object.keys(
-      group.split("\n").join("").split("").reduce((map, char) => {
-        map[char] = 1;
-        return map;
-      }, {} as { [char: string]: number }),
+      group.split("\n").reduce((groupQuestionMap, person) => {
+        [...person].forEach((question) => groupQuestionMap[question] = 1);
+        return groupQuestionMap;
+      }, {} as { [question: string]: number }),
     ).length
   ).reduce((a, b) => a + b, 0),
 );
