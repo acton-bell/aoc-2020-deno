@@ -218,6 +218,7 @@ console.log(
 );
 
 // 6a
+// Count the number of unique questions answered within the group.
 console.log(
   "6a",
   day6Input.split("\n\n").map((group) =>
@@ -227,5 +228,26 @@ console.log(
         return groupQuestionMap;
       }, {} as { [question: string]: number }),
     ).length
+  ).reduce((a, b) => a + b, 0),
+);
+
+// 6b
+// Count the number of unique questions answered by everyone within the group.
+console.log(
+  "6b",
+  day6Input.split("\n\n").map((group) =>
+    Object.values(
+      group.split("\n").reduce((groupQuestionMap, person, index, array) => {
+        [...person].forEach((question) =>
+          // This is the important bit: we *decrement* the count for each
+          // question, because we don't have access to `array.length`...
+          groupQuestionMap[question] = groupQuestionMap[question]
+            ? groupQuestionMap[question] - 1
+            : array.length - 1
+        );
+        return groupQuestionMap;
+      }, {} as { [question: string]: number }),
+      // ...when performing this `filter` call:
+    ).filter((value) => value === 0).length
   ).reduce((a, b) => a + b, 0),
 );
