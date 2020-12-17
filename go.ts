@@ -4,6 +4,7 @@ import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
 import { input as day5Input } from "./day5.ts";
 import { input as day6Input } from "./day6.ts";
+import { input as day7Input } from "./day7.ts";
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
@@ -251,3 +252,57 @@ console.log(
     ).filter((value) => value === 0).length
   ).reduce((a, b) => a + b, 0),
 );
+
+// 7a
+// dull blue bags contain 2 dotted green bags, 1 dull brown bag, 3 striped tomato bags, 5 muted blue bags.
+const rawNodes = day7Input.split("\n").map((rawNode) =>
+  rawNode.split(" bags contain ")
+);
+
+type Node = {
+  id: string;
+  parentLinks: Array<{ parent: Node; count: number }>;
+  childLinks: Array<{ child: Node; count: number }>;
+};
+
+// Build map with placeholders for parents and children:
+const nodeMap = rawNodes.reduce(
+  (map, [id]) => {
+    map[id] = { parentLinks: [], id, childLinks: [] };
+    return map;
+  },
+  {} as {
+    [id: string]: Node;
+  },
+);
+
+// Fill parents and children:
+rawNodes.forEach(([id, childrenString]) => {
+  if (childrenString !== "no other bags.") {
+    childrenString.split(", ").forEach((childString: string) => {
+      const [count, shade, color, ...rest] = childString.split(" ");
+      nodeMap[`${shade} ${color}`].parentLinks.push(
+        { parent: nodeMap[id], count: parseInt(count) },
+      );
+      nodeMap[id].childLinks.push(
+        { child: nodeMap[`${shade} ${color}`], count: parseInt(count) },
+      );
+    });
+  }
+});
+
+const getParentIds = (node: Node): any =>
+  node.parentLinks.map(
+    (link) => [link.parent.id].concat(getParentIds(link.parent)),
+  ).flat();
+
+// Use Set to quickly get distinct count of ids:
+console.log("7a", [...new Set(getParentIds(nodeMap["shiny gold"]))].length);
+
+// 7b
+const countBagsInclusive = (node: Node): number =>
+  node.childLinks.reduce((total, childLink) => {
+    return total + childLink.count * countBagsInclusive(childLink.child);
+  }, 1);
+// We only count children, so need to -1 from the total:
+console.log("7b", countBagsInclusive(nodeMap["shiny gold"]) - 1);
