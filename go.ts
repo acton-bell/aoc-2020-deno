@@ -6,20 +6,23 @@ import { input as day5Input } from "./day5.ts";
 import { input as day6Input } from "./day6.ts";
 import { input as day7Input } from "./day7.ts";
 import { input as day8Input } from "./day8.ts";
+import { input as day9Input } from "./day9.ts";
 
 const clog = window.console.log;
 const console = { log: (...value: any) => void 0 };
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
-const findTwoNumbersFromInputThatSumToTarget = (
+const findTwoNonEqualNumbersFromInputThatSumToTarget = (
   input: number[],
   target: number,
 ) => {
   const complements: { [key: number]: number } = {};
   for (const element of input) {
     complements[element] = target - element;
-    if (complements[complements[element]]) {
+    if (
+      complements[complements[element]] && (element !== complements[element])
+    ) {
       return [element, complements[element]];
     }
   }
@@ -27,7 +30,10 @@ const findTwoNumbersFromInputThatSumToTarget = (
   return undefined;
 };
 
-console.log("1a", findTwoNumbersFromInputThatSumToTarget(day1Input, 2020));
+console.log(
+  "1a",
+  findTwoNonEqualNumbersFromInputThatSumToTarget(day1Input, 2020),
+);
 
 // 1b
 // For an array of numbers `input`, find the three values which sum to some `target`.
@@ -36,7 +42,7 @@ const findThreeNumbersFromInputThatSumToTarget = (
   target: number,
 ) => {
   for (const element of input) {
-    const twoNumbers = findTwoNumbersFromInputThatSumToTarget(
+    const twoNumbers = findTwoNonEqualNumbersFromInputThatSumToTarget(
       input,
       target - element,
     );
@@ -401,4 +407,26 @@ const executeProgram2 = (program: string) => {
 
   return accumulator;
 };
-clog(executeProgram2(day8Input));
+console.log(executeProgram2(day8Input));
+
+// 9a
+// 25 number preamble
+// each subsequent number is the sum of two numbers from the immediately previous 25 numbers
+// two numbers will be different
+
+const findNumber = (input: number[]) => {
+  const preambleLength = 25;
+  for (let index = preambleLength; index < input.length; index++) {
+    const numbers = findTwoNonEqualNumbersFromInputThatSumToTarget(
+      input.slice(index - preambleLength, index),
+      input[index],
+    );
+
+    if (!numbers || numbers[0] === numbers[1]) {
+      return input[index];
+    }
+  }
+
+  return undefined;
+};
+clog(findNumber(day9Input));
