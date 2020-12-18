@@ -542,7 +542,15 @@ const initMatrix = (rows: number, cols: number) => {
   return output;
 };
 
-const getStableSeatCount = (rawGrid: string) => {
+const getStableSeatCount = (
+  rawGrid: string,
+  occupiedToEmptyCount: number = 4,
+  occupiedCounter: (
+    cellRow: number,
+    cellCol: number,
+    grid: string[][],
+  ) => number = countOccupiedNeighbours,
+) => {
   // Initialise grid:
   let grid = rawGrid.split("\n").map((row) => row.split(""));
 
@@ -564,7 +572,7 @@ const getStableSeatCount = (rawGrid: string) => {
         const cell = row[j];
 
         // Optimisation - don't need to do this for empty seats:
-        const occupiedNeighboursCount = countOccupiedNeighbours(
+        const occupiedNeighboursCount = occupiedCounter(
           i,
           j,
           grid,
@@ -574,7 +582,9 @@ const getStableSeatCount = (rawGrid: string) => {
         if (cell === "L" && occupiedNeighboursCount === 0) {
           nextGrid[i][j] = "#";
           changedCells++;
-        } else if (cell === "#" && occupiedNeighboursCount >= 4) {
+        } else if (
+          cell === "#" && occupiedNeighboursCount >= occupiedToEmptyCount
+        ) {
           nextGrid[i][j] = "L";
           changedCells++;
         } else {
@@ -598,3 +608,28 @@ const getStableSeatCount = (rawGrid: string) => {
 clog(getStableSeatCount(day11Input));
 
 // 11b
+
+clog(getStableSeatCount(day11Input, 5, (cellRow, cellCol, grid) =>
+  [
+    [-1, -1],
+    [-1, 0],
+    [-1, +1],
+    [0, -1],
+    [0, +1],
+    [+1, -1],
+    [+1, 0],
+    [+1, +1],
+  ].reduce(
+    (sum, [di, dj]) => {
+      let nextCell: string = ".";
+      let i = cellRow, j = cellCol;
+      while (nextCell === ".") {
+        i += di;
+        j += dj;
+        nextCell = ((grid[i] ?? [])[j] ?? "");
+      }
+
+      return nextCell === "#" ? sum + 1 : sum;
+    },
+    0,
+  )));
