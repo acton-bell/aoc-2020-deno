@@ -318,7 +318,7 @@ const countBagsInclusive = (node: Node): number =>
 console.log("7b", countBagsInclusive(nodeMap["shiny gold"]) - 1);
 
 // 8a
-const executeProgram = (program: string) => {
+const executeProgram8a = (program: string) => {
   const lines = program.split("\n").map(
     (line) => ([line.slice(0, 3), parseInt(line.slice(4))] as [string, number]),
   );
@@ -344,10 +344,10 @@ const executeProgram = (program: string) => {
 
   return accumulator;
 };
-console.log(executeProgram(day8Input));
+console.log("8a", executeProgram8a(day8Input));
 
 // 8b
-const executeProgram2 = (program: string) => {
+const executeProgram8b = (program: string) => {
   // Extract the code:
   const lines = program.split("\n").map(
     (line) => ([line.slice(0, 3), parseInt(line.slice(4))] as [string, number]),
@@ -407,15 +407,14 @@ const executeProgram2 = (program: string) => {
 
   return accumulator;
 };
-console.log(executeProgram2(day8Input));
+console.log("8b", executeProgram8b(day8Input));
 
 // 9a
 // 25 number preamble
 // each subsequent number is the sum of two numbers from the immediately previous 25 numbers
 // two numbers will be different
 
-const findNumber = (input: number[]) => {
-  const preambleLength = 25;
+const findInvalidNumber = (input: number[], preambleLength: number) => {
   for (let index = preambleLength; index < input.length; index++) {
     const numbers = findTwoNonEqualNumbersFromInputThatSumToTarget(
       input.slice(index - preambleLength, index),
@@ -429,4 +428,47 @@ const findNumber = (input: number[]) => {
 
   return undefined;
 };
-clog(findNumber(day9Input));
+console.log("9a", findInvalidNumber(day9Input, 25));
+
+// 9b
+// Set of contiguous numbers (length >= 2) that sum to target:
+
+const findContiguousSum = (input: number[], target: number) => {
+  // Track start of range, end of range, and total:
+  let i = 0, j = 1, sum = 0;
+
+  // Loop until we are outside of input (failure condition):
+  while (i < input.length) {
+    // Initial value of sum:
+    sum = input[i] + input[j];
+
+    // Enlarge range until sum >= target:
+    while (sum < target) {
+      j++;
+      sum += input[j];
+    }
+
+    // Check victory condition:
+    if (sum === target) {
+      // Return the range:
+      return input.slice(i, j + 1);
+    } /* i.e. sum > target */ else {
+      // Too big, reset iteration values:
+      i++; // <- increment starting index to check new range
+      j = i + 1;
+      sum = 0;
+    }
+  }
+
+  return undefined;
+};
+
+console.log(
+  "9b",
+  ((range) => range[0] + range[range.length - 1])(
+    findContiguousSum(day9Input, findInvalidNumber(day9Input, 25)!)!.sort((
+      a,
+      b,
+    ) => a - b),
+  ),
+);
