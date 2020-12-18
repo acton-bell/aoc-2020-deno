@@ -1,4 +1,5 @@
 import { input as day1Input } from "./day1.ts";
+import { input as day10Input } from "./day10.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
@@ -472,3 +473,40 @@ console.log(
     ) => a - b),
   ),
 );
+
+// 10a
+const getGaps = (adaptors: number[]) => {
+  const sorted = adaptors.slice(0, adaptors.length).sort((a, b) => a - b);
+  // clog(sorted);
+  sorted.unshift(0); // <- the socket
+  sorted.push(sorted[sorted.length - 1] + 3); // <- the device
+  const gaps = { 1: 0, 2: 0, 3: 0, permutations: 1, runs: [] as number[] };
+  let run = 0;
+  for (let index = 1; index < sorted.length; index++) {
+    const gap = sorted[index] - sorted[index - 1];
+    if (gap === 1 || gap === 2 || gap === 3) {
+      gaps[gap]++;
+      if (gap === 1) {
+        run++;
+      } else {
+        const permutations = run === 4 ? 7 : run === 3 ? 4 : run === 2 ? 2 : 1;
+        gaps.permutations = gaps.permutations * permutations;
+        gaps.runs.push(run);
+        run = 0;
+      }
+    } else {
+      throw new Error("unexpected gap");
+    }
+  }
+
+  return gaps;
+};
+console.log("10a", ((gaps) => (gaps[1] * gaps[3]))(getGaps(day10Input)));
+
+// 10b
+// Examining getGaps().runs shows that we never see more than 4 1-gaps in a row, and we never see 2-gaps.
+// This allows us to cheat a bit by manually calculating the combinations (i.e. a run of 4 1-gaps has 7 ways of 'crossing' it).
+// 3-gaps act as bridges between separate sets of combinations (only 1 way to cross a 3-gap).
+// This lets us calculate the total valid combination count as the product of all combination counts for 1-gap regions.
+// i.e. C(123678) = C(123) * C(678) = 4
+clog(getGaps(day10Input).permutations);
