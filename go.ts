@@ -338,4 +338,67 @@ const executeProgram = (program: string) => {
 
   return accumulator;
 };
-clog(executeProgram(day8Input));
+console.log(executeProgram(day8Input));
+
+// 8b
+const executeProgram2 = (program: string) => {
+  // Extract the code:
+  const lines = program.split("\n").map(
+    (line) => ([line.slice(0, 3), parseInt(line.slice(4))] as [string, number]),
+  );
+
+  // Within-iteration values:
+  let linesVisitedMap: { [line: number]: boolean } = {};
+  let linePointer = 0;
+  let accumulator = 0;
+  let wasLineChangedThisRun = false;
+
+  // Cross-iteration values:
+  const linesChangedMap: { [line: number]: boolean } = {};
+
+  // Our success condition is that the pointer reached the end of the program:
+  while (linePointer !== lines.length) {
+    linesVisitedMap[linePointer] = true;
+    let [instruction, value] = lines[linePointer];
+
+    // Handle the instruction:
+    if (instruction === "acc") {
+      accumulator += value;
+      linePointer++;
+    } /* JMP and NOP */ else {
+      // Here we attempt to change the instruction.
+      // We track whether an instruction was changed this run,
+      // and which instructions we've changed before.
+      // This lets us incrementally move through the line changes.
+      if (!wasLineChangedThisRun && !linesChangedMap[linePointer]) {
+        // Flip the instruction (assumes can only be jmp or nop):
+        instruction = instruction === "nop" ? "jmp" : "nop";
+        linesChangedMap[linePointer] = true;
+        wasLineChangedThisRun = true;
+
+        // An aside: we don't need to permanently change the line
+        // in the code, because if we revisit this line, we can
+        // just immediately stop anyway.
+      }
+
+      // Now we just perform the logic as normal:
+      if (instruction === "jmp") {
+        linePointer += value;
+      } else if (instruction === "nop") {
+        linePointer++;
+      }
+    }
+
+    // Now we check to see if the modified pointer has already been visited...
+    if (linesVisitedMap[linePointer]) {
+      // ...in which case we perform a reset, retaining our `changed` map:
+      linesVisitedMap = {};
+      linePointer = 0;
+      accumulator = 0;
+      wasLineChangedThisRun = false;
+    }
+  }
+
+  return accumulator;
+};
+clog(executeProgram2(day8Input));
