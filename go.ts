@@ -1,6 +1,7 @@
 import { input as day1Input } from "./day1.ts";
 import { input as day10Input } from "./day10.ts";
 import { input as day11Input } from "./day11.ts";
+import { input as day12Input } from "./day12.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
@@ -605,31 +606,117 @@ const getStableSeatCount = (
     0,
   );
 };
-clog(getStableSeatCount(day11Input));
+console.log("11a", getStableSeatCount(day11Input));
 
 // 11b
 
-clog(getStableSeatCount(day11Input, 5, (cellRow, cellCol, grid) =>
-  [
-    [-1, -1],
-    [-1, 0],
-    [-1, +1],
-    [0, -1],
-    [0, +1],
-    [+1, -1],
-    [+1, 0],
-    [+1, +1],
-  ].reduce(
-    (sum, [di, dj]) => {
-      let nextCell: string = ".";
-      let i = cellRow, j = cellCol;
-      while (nextCell === ".") {
-        i += di;
-        j += dj;
-        nextCell = ((grid[i] ?? [])[j] ?? "");
+console.log(
+  "11b",
+  getStableSeatCount(day11Input, 5, (cellRow, cellCol, grid) =>
+    [
+      [-1, -1],
+      [-1, 0],
+      [-1, +1],
+      [0, -1],
+      [0, +1],
+      [+1, -1],
+      [+1, 0],
+      [+1, +1],
+    ].reduce(
+      (sum, [di, dj]) => {
+        let nextCell: string = ".";
+        let i = cellRow, j = cellCol;
+        while (nextCell === ".") {
+          i += di;
+          j += dj;
+          nextCell = ((grid[i] ?? [])[j] ?? "");
+        }
+
+        return nextCell === "#" ? sum + 1 : sum;
+      },
+      0,
+    )),
+);
+
+// 12a
+type InstructionKey = "N" | "S" | "E" | "W" | "L" | "R" | "F";
+// A vector-based compass (NESW):
+const Compass: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+const getManhattanDistance = (instructions: string) => {
+  // Parse the instructions:
+  const parsed: Array<[InstructionKey, number]> = instructions.split("\n").map(
+    (
+      instruction,
+    ) => [
+      instruction.slice(0, 1) as InstructionKey,
+      parseInt(instruction.slice(1)),
+    ],
+  );
+
+  // Action N means to move north by the given value.
+  // Action S means to move south by the given value.
+  // Action E means to move east by the given value.
+  // Action W means to move west by the given value.
+  // Action L means to turn left the given number of degrees.
+  // Action R means to turn right the given number of degrees.
+  // Action F means to move forward by the given value in the direction the ship is currently facing.
+
+  // Initial positions:
+  const position = [0, 0];
+
+  // Initial compass pointer (corresponds to East in our array-based Compass):
+  let compassPointer = 1;
+
+  // Initial direction vector:
+  let directionVector = Compass[compassPointer];
+
+  // Execute the instructions:
+  for (const [key, value] of parsed) {
+    // A fixed movement (or go forward, both easy if we have a compass direction vector):
+    if (["F", "N", "E", "S", "W"].includes(key)) {
+      let fixedMovementVector = [0, 0]; // (fMV)
+
+      // Set fMV based on Compass direction (e.g. South is Compass[2]) or current direction (F):
+      switch (key) {
+        case "N":
+          fixedMovementVector = Compass[0];
+          break;
+        case "E":
+          fixedMovementVector = Compass[1];
+          break;
+        case "S":
+          fixedMovementVector = Compass[2];
+          break;
+        case "W":
+          fixedMovementVector = Compass[3];
+          break;
+        case "F":
+          fixedMovementVector = directionVector;
+          break;
       }
 
-      return nextCell === "#" ? sum + 1 : sum;
-    },
-    0,
-  )));
+      // Update position:
+      position[0] += fixedMovementVector[0] * value;
+      position[1] += fixedMovementVector[1] * value;
+    } else if (key === "L" || key == "R") {
+      // Otherwise, execute a turn (tricky).
+      // We will transform all turns into a fixed number of compass pointer increments.
+
+      // Three left turns make a right.
+      const asRightTurn = key === "R" ? value : 360 - value; // e.g. L90 -> R270
+
+      // Turning right 90 degrees is equivalent to incrementing the compass index (i.e. compassPointer) by 1.
+      const indexDelta = asRightTurn / 90; // e.g. 270 / 90 -> 3
+
+      // Increment the compass pointer, wrapping round (%) if we need to:
+      compassPointer = (compassPointer + indexDelta) % Compass.length;
+
+      // Set the compass:
+      directionVector = Compass[compassPointer];
+    }
+  }
+
+  return position;
+};
+
+clog((([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance(day12Input)));
