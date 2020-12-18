@@ -1,5 +1,6 @@
 import { input as day1Input } from "./day1.ts";
 import { input as day10Input } from "./day10.ts";
+import { input as day11Input } from "./day11.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
@@ -509,4 +510,91 @@ console.log("10a", ((gaps) => (gaps[1] * gaps[3]))(getGaps(day10Input)));
 // 3-gaps act as bridges between separate sets of combinations (only 1 way to cross a 3-gap).
 // This lets us calculate the total valid combination count as the product of all combination counts for 1-gap regions.
 // i.e. C(123678) = C(123) * C(678) = 4
-clog(getGaps(day10Input).permutations);
+console.log("10b", getGaps(day10Input).permutations);
+
+// 11a
+// Counts occupied neighbours (all eight directions):
+const countOccupiedNeighbours = (
+  cellRow: number,
+  cellCol: number,
+  grid: string[][],
+) =>
+  [
+    [cellRow - 1, cellCol - 1],
+    [cellRow - 1, cellCol],
+    [cellRow - 1, cellCol + 1],
+    [cellRow, cellCol - 1],
+    [cellRow, cellCol + 1],
+    [cellRow + 1, cellCol - 1],
+    [cellRow + 1, cellCol],
+    [cellRow + 1, cellCol + 1],
+  ].reduce(
+    (sum, [i, j]) => ((grid[i] ?? [])[j] ?? "") === "#" ? sum + 1 : sum,
+    0,
+  );
+
+// Creates matrix with `rows` rows and `cols` cols:
+const initMatrix = (rows: number, cols: number) => {
+  const output = [];
+  for (let rowNumber = 0; rowNumber < rows; rowNumber++) {
+    output.push(new Array(cols));
+  }
+  return output;
+};
+
+const getStableSeatCount = (rawGrid: string) => {
+  // Initialise grid:
+  let grid = rawGrid.split("\n").map((row) => row.split(""));
+
+  // Could use boolean instead:
+  let changedCells = Infinity;
+
+  // Loop until no cells change:
+  while (changedCells !== 0) {
+    // Initialise next grid:
+    const nextGrid = initMatrix(grid.length, grid[0].length);
+
+    // Reset counters:
+    changedCells = 0;
+
+    // Iterate grid:
+    for (let i = 0; i < grid.length; i++) {
+      const row = grid[i];
+      for (let j = 0; j < row.length; j++) {
+        const cell = row[j];
+
+        // Optimisation - don't need to do this for empty seats:
+        const occupiedNeighboursCount = countOccupiedNeighbours(
+          i,
+          j,
+          grid,
+        );
+
+        // Perform change rules:
+        if (cell === "L" && occupiedNeighboursCount === 0) {
+          nextGrid[i][j] = "#";
+          changedCells++;
+        } else if (cell === "#" && occupiedNeighboursCount >= 4) {
+          nextGrid[i][j] = "L";
+          changedCells++;
+        } else {
+          // Unchanged cells:
+          nextGrid[i][j] = cell;
+        }
+      }
+    }
+
+    // Swap grids:
+    grid = nextGrid;
+  }
+
+  return grid.reduce(
+    (totalSum, row) =>
+      totalSum +
+      row.reduce((rowSum, cell) => rowSum + (cell === "#" ? 1 : 0), 0),
+    0,
+  );
+};
+clog(getStableSeatCount(day11Input));
+
+// 11b
