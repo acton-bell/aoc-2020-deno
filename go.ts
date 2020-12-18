@@ -5,6 +5,10 @@ import { input as day4Input } from "./day4.ts";
 import { input as day5Input } from "./day5.ts";
 import { input as day6Input } from "./day6.ts";
 import { input as day7Input } from "./day7.ts";
+import { input as day8Input } from "./day8.ts";
+
+const clog = window.console.log;
+const console = { log: (...value: any) => void 0 };
 
 // 1a
 // For an array of numbers `input`, find the two values which sum to some `target`.
@@ -306,3 +310,32 @@ const countBagsInclusive = (node: Node): number =>
   }, 1);
 // We only count children, so need to -1 from the total:
 console.log("7b", countBagsInclusive(nodeMap["shiny gold"]) - 1);
+
+// 8a
+const executeProgram = (program: string) => {
+  const lines = program.split("\n").map(
+    (line) => ([line.slice(0, 3), parseInt(line.slice(4))] as [string, number]),
+  );
+  const visited: { [line: number]: number } = {};
+  let accumulator = 0;
+  let pointer = 0;
+  while (visited[pointer] !== 1) {
+    visited[pointer] = 1;
+    const [instruction, value] = lines[pointer];
+    switch (instruction) {
+      case "acc":
+        accumulator += value;
+        pointer++;
+        break;
+      case "nop":
+        pointer++;
+        break;
+      case "jmp":
+        pointer += value;
+        break;
+    }
+  }
+
+  return accumulator;
+};
+clog(executeProgram(day8Input));
