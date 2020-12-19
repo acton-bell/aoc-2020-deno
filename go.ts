@@ -642,7 +642,7 @@ console.log(
 type InstructionKey = "N" | "S" | "E" | "W" | "L" | "R" | "F";
 // A vector-based compass (NESW):
 const Compass: Array<[number, number]> = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-const getManhattanDistance = (instructions: string) => {
+const getManhattanDistance1 = (instructions: string) => {
   // Parse the instructions:
   const parsed: Array<[InstructionKey, number]> = instructions.split("\n").map(
     (
@@ -719,4 +719,88 @@ const getManhattanDistance = (instructions: string) => {
   return position;
 };
 
-clog((([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance(day12Input)));
+clog(
+  (([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance1(day12Input)),
+);
+
+// 12b
+
+const translate = (
+  vector: [number, number],
+  delta: [number, number],
+  multiple: number = 1,
+) => {
+  vector[0] += delta[0] * multiple;
+  vector[1] += delta[1] * multiple;
+  return vector;
+};
+
+const getManhattanDistance2 = (instructions: string) => {
+  // Parse the instructions:
+  const parsed: Array<[InstructionKey, number]> = instructions.split("\n").map(
+    (
+      instruction,
+    ) => [
+      instruction.slice(0, 1) as InstructionKey,
+      parseInt(instruction.slice(1)),
+    ],
+  );
+
+  // Action N means to move the waypoint north by the given value.
+  // Action S means to move the waypoint south by the given value.
+  // Action E means to move the waypoint east by the given value.
+  // Action W means to move the waypoint west by the given value.
+  // Action L means to rotate the waypoint around the ship left (counter-clockwise) the given number of degrees.
+  // Action R means to rotate the waypoint around the ship right (clockwise) the given number of degrees.
+  // Action F means to move forward to the waypoint a number of times equal to the given value.
+
+  // Initial positions:
+  const shipPosition: [number, number] = [0, 0];
+  const waypointVector: [number, number] = [10, 1];
+
+  // Execute the instructions:
+  for (const [key, value] of parsed) {
+    // A fixed movement of the waypoint (easy):
+    if (["N", "E", "S", "W"].includes(key)) {
+      // Translate waypoint vector according to direction:
+      switch (key) {
+        case "N":
+          translate(waypointVector, Compass[0], value);
+          break;
+        case "E":
+          translate(waypointVector, Compass[1], value);
+          break;
+        case "S":
+          translate(waypointVector, Compass[2], value);
+          break;
+        case "W":
+          translate(waypointVector, Compass[3], value);
+          break;
+      }
+    } else if (key === "L" || key == "R") {
+      // Rotate the waypoint.
+
+      // Three left turns make a right:
+      const asRightTurn = key === "R" ? value : 360 - value; // e.g. L90 -> R270
+
+      // Get turn as multiple of 90:
+      const rightTurns = asRightTurn / 90; // e.g. 270 / 90 -> 3
+
+      // One 90degree turn is (x,y) -> (y,-x):
+      for (let index = 0; index < rightTurns; index++) {
+        const xTemp = waypointVector[0];
+        waypointVector[0] = waypointVector[1];
+        waypointVector[1] = -xTemp;
+      }
+    } else if (key === "F") {
+      // Just move ship in `waypoint` direction `value` times:
+      translate(shipPosition, waypointVector, value);
+    }
+  }
+
+  return shipPosition;
+};
+
+clog(
+  (([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance2(day12Input)),
+);
