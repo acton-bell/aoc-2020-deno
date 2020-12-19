@@ -831,3 +831,31 @@ const getAnswer13a = (earliestDepartureTime: number, buses: string) => {
 clog(getAnswer13a(earliestDepartureTime, buses));
 
 // 13b
+
+const checkSolution = (potentialSolution: number, busNumbers: number[]) => {
+  for (let busIndex = 1; busIndex < busNumbers.length; busIndex++) {
+    const busNumber = busNumbers[busIndex];
+    if ((potentialSolution + busIndex) % busNumber) {
+      return false;
+    }
+  }
+
+  return true;
+};
+// Slow, but works for all numbers (inc. non-prime):
+const getAnswer13b = (buses: string) => {
+  const busNumbers = buses.split(",").map((bus) =>
+    bus === "x" ? 1 : parseInt(bus)
+  );
+
+  let potentialSolution = 0;
+  // Check solution:
+  while (true) {
+    if (checkSolution(potentialSolution, busNumbers)) {
+      return potentialSolution;
+    } else {
+      potentialSolution += busNumbers[0];
+    }
+  }
+};
+clog(getAnswer13b(buses));
