@@ -719,7 +719,8 @@ const getManhattanDistance1 = (instructions: string) => {
   return position;
 };
 
-clog(
+console.log(
+  "12a",
   (([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance1(day12Input)),
 );
 
@@ -801,6 +802,7 @@ const getManhattanDistance2 = (instructions: string) => {
   return shipPosition;
 };
 
-clog(
+console.log(
+  "12b",
   (([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance2(day12Input)),
 );
