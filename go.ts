@@ -708,6 +708,8 @@ const getManhattanDistance1 = (instructions: string) => {
       // Turning right 90 degrees is equivalent to incrementing the compass index (i.e. compassPointer) by 1.
       const indexDelta = asRightTurn / 90; // e.g. 270 / 90 -> 3
 
+      // Alternantive (better) approach from part 2: 90degree right turn is (x,y) -> (y,-x).
+
       // Increment the compass pointer, wrapping round (%) if we need to:
       compassPointer = (compassPointer + indexDelta) % Compass.length;
 
@@ -761,7 +763,7 @@ const getManhattanDistance2 = (instructions: string) => {
 
   // Execute the instructions:
   for (const [key, value] of parsed) {
-    // A fixed movement of the waypoint (easy):
+    // A fixed movement of the waypoint:
     if (["N", "E", "S", "W"].includes(key)) {
       // Translate waypoint vector according to direction:
       switch (key) {
@@ -787,7 +789,7 @@ const getManhattanDistance2 = (instructions: string) => {
       // Get turn as multiple of 90:
       const rightTurns = asRightTurn / 90; // e.g. 270 / 90 -> 3
 
-      // One 90degree turn is (x,y) -> (y,-x):
+      // One 90 degree right turn is (x,y) -> (y,-x):
       for (let index = 0; index < rightTurns; index++) {
         const xTemp = waypointVector[0];
         waypointVector[0] = waypointVector[1];
