@@ -843,6 +843,7 @@ const checkSolution = (potentialSolution: number, busNumbers: number[]) => {
   return true;
 };
 // Slow, but works for all numbers (inc. non-prime):
+// https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
 const getAnswer13b = (buses: string) => {
   const busNumbers = buses.split(",").map((bus) =>
     bus === "x" ? 1 : parseInt(bus)
@@ -851,6 +852,10 @@ const getAnswer13b = (buses: string) => {
   let potentialSolution = 0;
   // Check solution:
   while (true) {
+    if ((potentialSolution + 1) % 10000000 === 0) {
+      clog(potentialSolution);
+    }
+
     if (checkSolution(potentialSolution, busNumbers)) {
       return potentialSolution;
     } else {
@@ -858,4 +863,98 @@ const getAnswer13b = (buses: string) => {
     }
   }
 };
+
+// Also works, but slower.
+// If we could calculate inverse mod, this would be quite quick?
+const getAnswer13c = (buses: string) => {
+  const busNumbers = buses.split(",").map((bus) =>
+    bus === "x" ? 1 : parseInt(bus)
+  );
+
+  let potentialSolution = 0;
+  let solutionFound = false;
+  // Check solution:
+  while (!solutionFound) {
+    solutionFound = true;
+    potentialSolution++;
+    if ((potentialSolution + 1) % 10000000 === 0) {
+      clog(potentialSolution);
+    }
+
+    for (let busIndex = 1; busIndex < busNumbers.length; busIndex++) {
+      const busNumber = busNumbers[busIndex];
+      if (
+        busNumber !== 1 &&
+        (potentialSolution * busNumbers[0]) % busNumber !==
+          busNumber - busIndex
+      ) {
+        solutionFound = false;
+        break;
+      }
+    }
+  }
+
+  return potentialSolution * busNumbers[0];
+};
+// clog(getAnswer13b(`13,41`)); // (n * 13) % 41 === 41 - 1 -> n = 22
+// clog(getAnswer13b(`13,41,997`)); // (n * 13) % 41 === 41 - 1 -> n = 22
+// clog(getAnswer13c(`13,41`)); // (n * 13) % 41 === 41 - 1 -> n = 22
+// clog(getAnswer13c(`13,41,997`)); // (n * 13) % 41 === 41 - 1 -> n = 22
+// clog(getAnswer13b(`13,x,41`));
+// clog(getAnswer13b(`13,x,x,41`));
+// clog(getAnswer13b(`13,x,x,x,41`));
+// clog(getAnswer13c(`13,x,x,x,x,41`));
+// clog(getAnswer13b(`13,x,x,41,x,x,x,x,x,x,x,x,x,997`));
+// clog(getAnswer13c(`13,x,x,41,x,x,x,x,x,x,x,x,x,997`));
 clog(getAnswer13b(buses));
+// clog(getAnswer13c(buses));
+
+// Would normally align at 13*41
+// Instead, some fraction where 41 % n*13 == 1?
+
+// clog(getAnswer13b(`13,41,997`));
+// clog(getAnswer13b(`${getAnswer13b(`13,41`) + 1},997`) - 1);
+// 531401
+// 533
+
+// 34 5
+// 67 10
+// 910 15
+// 1213 20
+// 1516
+// 1819
+
+// clog(getAnswer13b(`13,41`));
+// clog(getAnswer13b(`13,x,x,x,41`));
+// clog(getAnswer13b(`13,41,997`));
+// clog(getAnswer13b(`13,41,997,23`));
+
+// `13,x,x,41,x,x,x`;
+// 13 41 -> 13 * 41
+// 13
+//   41 -> (13 + 1) * 41 (/ 2)
+// 13
+//   x
+//     41 -> (13 + 2) * 41
+
+// 13
+//   xx
+//     xx
+//       41
+
+// (13x + 3) = 41y
+
+// 13x + 1 = 41y
+// 13x = 41y
+//
+
+// 13,41
+// (13 + 1) * 41 / 2     - 1
+// 13,x,41
+// (13 + 2) * 41 / 5 / 3 - 2
+// 13,x,x,41
+// (13 + 3) * 41 / 2     - 3
+// 13,x,x,x,41
+// (13 + 4) * 41 / ?     - 4
+
+// 13n
