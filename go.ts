@@ -2,6 +2,7 @@ import { input as day1Input } from "./day1.ts";
 import { input as day10Input } from "./day10.ts";
 import { input as day11Input } from "./day11.ts";
 import { input as day12Input } from "./day12.ts";
+import { buses, earliestDepartureTime } from "./day13.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
@@ -808,3 +809,25 @@ console.log(
   "12b",
   (([x, y]) => Math.abs(x) + Math.abs(y))(getManhattanDistance2(day12Input)),
 );
+
+// 13a
+const getAnswer13a = (earliestDepartureTime: number, buses: string) => {
+  const busNumbers = buses.split(",").filter((bus) => bus !== "x").map((bus) =>
+    parseInt(bus)
+  );
+
+  const earliestTimeMap: { [bus: number]: number } = {};
+  for (const busNumber of busNumbers) {
+    let time = 0;
+    while (time < earliestDepartureTime) {
+      time += busNumber;
+    }
+    earliestTimeMap[busNumber] = time;
+  }
+
+  const sorted = Object.entries(earliestTimeMap).sort((a, b) => a[1] - b[1]);
+  return parseInt(sorted[0][0]) * (sorted[0][1] - earliestDepartureTime);
+};
+clog(getAnswer13a(earliestDepartureTime, buses));
+
+// 13b
