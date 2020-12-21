@@ -3,6 +3,7 @@ import { input as day10Input } from "./day10.ts";
 import { input as day11Input } from "./day11.ts";
 import { input as day12Input } from "./day12.ts";
 import { buses, earliestDepartureTime } from "./day13.ts";
+import { input as day14Input } from "./day14.ts";
 import { input as day2Input } from "./day2.ts";
 import { input as day3Input } from "./day3.ts";
 import { input as day4Input } from "./day4.ts";
@@ -828,7 +829,7 @@ const getAnswer13a = (earliestDepartureTime: number, buses: string) => {
   const sorted = Object.entries(earliestTimeMap).sort((a, b) => a[1] - b[1]);
   return parseInt(sorted[0][0]) * (sorted[0][1] - earliestDepartureTime);
 };
-clog(getAnswer13a(earliestDepartureTime, buses));
+console.log(getAnswer13a(earliestDepartureTime, buses));
 
 // 13b
 
@@ -906,7 +907,7 @@ const getAnswer13c = (buses: string) => {
 // clog(getAnswer13c(`13,x,x,x,x,41`));
 // clog(getAnswer13b(`13,x,x,41,x,x,x,x,x,x,x,x,x,997`));
 // clog(getAnswer13c(`13,x,x,41,x,x,x,x,x,x,x,x,x,997`));
-clog(getAnswer13b(buses));
+// console.log(getAnswer13b(buses));
 // clog(getAnswer13c(buses));
 
 // Would normally align at 13*41
@@ -958,3 +959,73 @@ clog(getAnswer13b(buses));
 // (13 + 4) * 41 / ?     - 4
 
 // 13n
+const test = `mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
+mem[8] = 11
+mem[7] = 101
+mem[8] = 0`;
+const exe14A = (program: string) => {
+  const instructions: Array<["mask", string] | ["mem", [number, number]]> =
+    program
+      .split("\n").map((line) => {
+        const [left, right] = line.split(" = ");
+        return left === "mask"
+          ? ["mask", right]
+          : ["mem", [parseInt(left.slice(4, -1)), parseInt(right)]];
+      });
+
+  const memory: { [memoryLocation: number]: number } = {};
+  let mask: string[] = [];
+  for (const [instructionName, values] of instructions) {
+    if (instructionName === "mask") {
+      // Should be able to use a type guard to make sure values is interpreted as string:
+      mask = (values as string).split("").reverse();
+    } else if (instructionName === "mem") {
+      // Should be able to use a type guard to make sure values is interpreted as [number, number]:
+      const [memoryLocation, attemptedValue] = values as [number, number];
+
+      // Perform mask (will NOT work with negative numbers):
+      if (attemptedValue < 0) {
+        throw new Error("Negative number encountered.");
+      }
+
+      // TODO: Better to do using binary arithmetic:
+      const attemptedValueAsBinaryDigits = attemptedValue.toString(2).split("")
+        .reverse();
+      const finalValueBinaryAsBinaryDigits = [];
+      for (let i = 0; i < 36; i++) {
+        const attemptedDigit = attemptedValueAsBinaryDigits[i];
+        const maskDigit = mask[i];
+        if (attemptedDigit === undefined) {
+          finalValueBinaryAsBinaryDigits.push(maskDigit === "1" ? "1" : "0");
+        } else if (maskDigit !== "X") {
+          finalValueBinaryAsBinaryDigits.push(maskDigit);
+        } else {
+          finalValueBinaryAsBinaryDigits.push(attemptedDigit);
+        }
+      }
+
+      // Set value:
+      memory[memoryLocation] = parseInt(
+        finalValueBinaryAsBinaryDigits.reverse().join(""),
+        2,
+      );
+    }
+  }
+
+  return Object.values(memory).reduce((a, b) => a + b);
+};
+clog(exe14A(day14Input));
+
+// 000111 A
+// X01X01 B
+// 001101
+
+// 000111
+//
+// B || B&A
+
+// 0011 A
+// 0101 B
+// 0101
+
+// B || B&A
