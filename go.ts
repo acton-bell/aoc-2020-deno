@@ -481,29 +481,40 @@ console.log(
 // 10a
 const getGaps = (adaptors: number[]) => {
   const sorted = adaptors.slice(0, adaptors.length).sort((a, b) => a - b);
-  // clog(sorted);
   sorted.unshift(0); // <- the socket
   sorted.push(sorted[sorted.length - 1] + 3); // <- the device
-  const gaps = { 1: 0, 2: 0, 3: 0, permutations: 1, runs: [] as number[] };
-  let run = 0;
+  const calculations = {
+    1: 0,
+    2: 0,
+    3: 0,
+    permutations: 1,
+    runs: [] as number[],
+  };
+  let currentRun = 0;
   for (let index = 1; index < sorted.length; index++) {
     const gap = sorted[index] - sorted[index - 1];
     if (gap === 1 || gap === 2 || gap === 3) {
-      gaps[gap]++;
+      calculations[gap]++;
       if (gap === 1) {
-        run++;
+        currentRun++;
       } else {
-        const permutations = run === 4 ? 7 : run === 3 ? 4 : run === 2 ? 2 : 1;
-        gaps.permutations = gaps.permutations * permutations;
-        gaps.runs.push(run);
-        run = 0;
+        const permutations = currentRun === 4
+          ? 7
+          : currentRun === 3
+          ? 4
+          : currentRun === 2
+          ? 2
+          : 1;
+        calculations.permutations = calculations.permutations * permutations;
+        calculations.runs.push(currentRun);
+        currentRun = 0;
       }
     } else {
       throw new Error("unexpected gap");
     }
   }
 
-  return gaps;
+  return calculations;
 };
 console.log("10a", ((gaps) => (gaps[1] * gaps[3]))(getGaps(day10Input)));
 
@@ -1114,3 +1125,20 @@ const execute14B = (program: string) => {
   return Object.values(memory).reduce((a, b) => a + b, 0);
 };
 console.log(execute14B(day14Input));
+
+// 15a
+const day15Input = [0, 12, 6, 13, 20, 1, 17];
+/**
+ *
+ * Given the starting numbers 1,3,2, the 2020th number spoken is 1.
+ * Given the starting numbers 2,1,3, the 2020th number spoken is 10.
+ * Given the starting numbers 1,2,3, the 2020th number spoken is 27.
+ * Given the starting numbers 2,3,1, the 2020th number spoken is 78.
+ * Given the starting numbers 3,2,1, the 2020th number spoken is 438.
+ * Given the starting numbers 3,1,2, the 2020th number spoken is 1836.
+ */
+const day15TestInput = [1, 2, 3];
+const playGame15 = (startingNumbers: number[], targetSpokenIndex: number) => {
+  return 42;
+};
+clog(playGame15(day15TestInput, 2020));
