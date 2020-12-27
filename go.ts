@@ -958,12 +958,10 @@ const getAnswer13c = (buses: string) => {
 // 13,x,x,x,41
 // (13 + 4) * 41 / ?     - 4
 
-// 13n
-const test = `mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X
-mem[8] = 11
-mem[7] = 101
-mem[8] = 0`;
-const exe14A = (program: string) => {
+// 14a
+const execute14A = (program: string) => {
+  // Instructions are either a mask consisting of a single string,
+  // or a memory allocation consisting of a location and a value to set:
   const instructions: Array<["mask", string] | ["mem", [number, number]]> =
     program
       .split("\n").map((line) => {
@@ -973,12 +971,17 @@ const exe14A = (program: string) => {
           : ["mem", [parseInt(left.slice(4, -1)), parseInt(right)]];
       });
 
+  // Initialise the memory as an empty object:
   const memory: { [memoryLocation: number]: number } = {};
-  let mask: string[] = [];
+
+  // Store the 'current' mask:
+  let currentMask: string[] = [];
+
+  // Loop and execute instructions:
   for (const [instructionName, values] of instructions) {
     if (instructionName === "mask") {
       // Should be able to use a type guard to make sure values is interpreted as string:
-      mask = (values as string).split("").reverse();
+      currentMask = (values as string).split("").reverse();
     } else if (instructionName === "mem") {
       // Should be able to use a type guard to make sure values is interpreted as [number, number]:
       const [memoryLocation, attemptedValue] = values as [number, number];
@@ -994,7 +997,7 @@ const exe14A = (program: string) => {
       const finalValueBinaryAsBinaryDigits = [];
       for (let i = 0; i < 36; i++) {
         const attemptedDigit = attemptedValueAsBinaryDigits[i];
-        const maskDigit = mask[i];
+        const maskDigit = currentMask[i];
         if (attemptedDigit === undefined) {
           finalValueBinaryAsBinaryDigits.push(maskDigit === "1" ? "1" : "0");
         } else if (maskDigit !== "X") {
@@ -1014,18 +1017,100 @@ const exe14A = (program: string) => {
 
   return Object.values(memory).reduce((a, b) => a + b);
 };
-clog(exe14A(day14Input));
+console.log(execute14A(day14Input));
 
-// 000111 A
-// X01X01 B
-// 001101
+// 14b
 
-// 000111
-//
-// B || B&A
+/**
+ * Given an input string of the form `01XX`, returns all possible binary permutations for the X positions:
+ * 
+ * 0100
+ * 0101
+ * 0110
+ * 0111
+ * 
+ * @example
+ * getPermutations('X') // -> ['0','1']
+ * 
+ * @example
+ * getPermutations('XX') // -> ['00','01','10','11']
+ * 
+ * @example
+ * getPermutations('00X11') // -> ['00011','00111']
+ */
+const getPermutations = (input: string) => {
+  const inputAsArray = input.split("");
+  const xCount = inputAsArray.filter((char) => char === "X").length;
+  const permutationCount = 1 << xCount;
+  const xPermutations = [];
+  for (let i = 0; i < permutationCount; i++) {
+    xPermutations.push(i.toString(2).padStart(xCount, "0"));
+  }
 
-// 0011 A
-// 0101 B
-// 0101
+  const permutations = [];
+  for (const xPermutation of xPermutations) {
+    let xPointer = 0;
+    const permutation = [];
+    for (let index = 0; index < inputAsArray.length; index++) {
+      if (inputAsArray[index] === "X") {
+        permutation.push(xPermutation[xPointer]);
+        xPointer++;
+      } else {
+        permutation.push(inputAsArray[index]);
+      }
+    }
 
-// B || B&A
+    permutations.push(permutation.join(""));
+  }
+
+  return permutations;
+};
+
+const execute14B = (program: string) => {
+  const instructions: Array<["mask", string] | ["mem", [number, number]]> =
+    program
+      .split("\n").map((line) => {
+        const [left, right] = line.split(" = ");
+        return left === "mask"
+          ? ["mask", right]
+          : ["mem", [parseInt(left.slice(4, -1)), parseInt(right)]];
+      });
+
+  const memory: { [memoryLocation: number]: number } = {};
+  let mask: string[] = [];
+  for (const [instructionName, values] of instructions) {
+    if (instructionName === "mask") {
+      // Should be able to use a type guard to make sure values is interpreted as string:
+      mask = (values as string).split("").reverse();
+    } else if (instructionName === "mem") {
+      // Should be able to use a type guard to make sure values is interpreted as [number, number]:
+      const [attemptedLocation, value] = values as [number, number];
+
+      // TODO: Better to do using binary arithmetic:
+      const attemptedLocationAsBinaryDigits = attemptedLocation.toString(2)
+        .padStart(36, "0")
+        .split("")
+        .reverse();
+      const finalLocationAsBinaryDigits = [];
+      for (let i = 0; i < 36; i++) {
+        const maskDigit = mask[i];
+        if (maskDigit === "0") {
+          finalLocationAsBinaryDigits.push(
+            attemptedLocationAsBinaryDigits[i],
+          );
+        } else {
+          finalLocationAsBinaryDigits.push(maskDigit);
+        }
+      }
+
+      const finalLocation = finalLocationAsBinaryDigits.reverse().join("");
+      const locationsToWrite = getPermutations(finalLocation);
+      for (const location of locationsToWrite) {
+        memory[parseInt(location, 2)] = value;
+      }
+    }
+  }
+
+  return Object.values(memory).reduce((a, b) => a + b, 0);
+};
+console.log(execute14B(day14Input));
