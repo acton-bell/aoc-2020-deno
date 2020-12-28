@@ -1126,9 +1126,11 @@ const execute14B = (program: string) => {
 };
 console.log(execute14B(day14Input));
 
-// 15a
+// Day 15
+
 const day15Input = [0, 12, 6, 13, 20, 1, 17];
 /**
+ * Could this be faster?
  *
  * Given the starting numbers 1,3,2, the 2020th number spoken is 1.
  * Given the starting numbers 2,1,3, the 2020th number spoken is 10.
@@ -1137,8 +1139,42 @@ const day15Input = [0, 12, 6, 13, 20, 1, 17];
  * Given the starting numbers 3,2,1, the 2020th number spoken is 438.
  * Given the starting numbers 3,1,2, the 2020th number spoken is 1836.
  */
-const day15TestInput = [1, 2, 3];
-const playGame15 = (startingNumbers: number[], targetSpokenIndex: number) => {
-  return 42;
+const day15TestInput = [3, 2, 1];
+const playGame15 = (startingNumbers: number[], spokenWordTarget: number) => {
+  const speakingHistory = startingNumbers.slice();
+  const mapOfNumberToIndices = speakingHistory.reduce(
+    (acc, startingNumber, index) => {
+      acc[startingNumber] = [index];
+      return acc;
+    },
+    {} as { [spokenNumber: number]: [number] },
+  );
+  for (
+    let i = speakingHistory.length;
+    i < spokenWordTarget;
+    i++
+  ) {
+    if ((i + 1) % 100000 === 0) {
+      clog(i);
+    }
+
+    const previousNumber = speakingHistory[i - 1];
+    const spokenIndices = mapOfNumberToIndices[previousNumber];
+    let numberToSay = spokenIndices.length === 1
+      ? 0
+      : spokenIndices[spokenIndices.length - 1] -
+        spokenIndices[spokenIndices.length - 2];
+
+    speakingHistory.push(numberToSay);
+    (mapOfNumberToIndices[numberToSay] = mapOfNumberToIndices[numberToSay] ??
+      []).push(i);
+  }
+
+  return { speakingHistory, mapOfNumberToIndices };
 };
-clog(playGame15(day15TestInput, 2020));
+
+// 15a:
+clog(playGame15(day15Input, 2020).speakingHistory.reverse()[0]);
+
+// 15b (this gets very slow):
+// console.log(playGame15(day15Input, 30000000).speakingHistory.reverse()[0]);
