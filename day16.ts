@@ -5329,6 +5329,14 @@ console.log("sup");
 //         <-->   <-->      <---->
 //      <--------------->   <---->
 
+const ticketIsValid = (ticket: number[]) =>
+  ticket.every((value) =>
+    rules.every((rule) =>
+      (value >= rule.lowerRange.min && value <= rule.lowerRange.max) ||
+      (value >= rule.upperRange.min && value <= rule.upperRange.max)
+    )
+  );
+
 let errorRate = 0;
 for (const ticket of tickets) {
   for (const value of ticket) {
