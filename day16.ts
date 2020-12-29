@@ -1,6 +1,14 @@
 export {};
 
-const rules = [
+type Range = { min: number; max: number };
+type Rule = {
+  name: string;
+  lowerRange: Range;
+  upperRange: Range;
+  positions?: number[];
+};
+
+const rules: Rule[] = [
   {
     name: "departure location",
     lowerRange: { min: 40, max: 261 },
@@ -5321,34 +5329,70 @@ const tickets = [
   ],
 ];
 
-console.log("sup");
+// True if the value is valid for the given rule.
+const valueIsValid = (value: number, rule: Rule) =>
+  (value >= rule.lowerRange.min && value <= rule.lowerRange.max) ||
+  (value >= rule.upperRange.min && value <= rule.upperRange.max);
 
-//      <----->      <-->
-//          <----->         <-->
-//      <--------->  <-->   <-->
-//         <-->   <-->      <---->
-//      <--------------->   <---->
-
+// True if, for every value within the ticket, at least one rule can be found
+// such that the value is considered 'valid' for that rule.
 const ticketIsValid = (ticket: number[]) =>
-  ticket.every((value) =>
-    rules.every((rule) =>
-      (value >= rule.lowerRange.min && value <= rule.lowerRange.max) ||
-      (value >= rule.upperRange.min && value <= rule.upperRange.max)
-    )
-  );
+  ticket.every((value) => rules.some((rule) => valueIsValid(value, rule)));
 
+// Part 1: calculate the error rate.
 let errorRate = 0;
 for (const ticket of tickets) {
   for (const value of ticket) {
     if (
-      rules.every((rule) =>
-        value < rule.lowerRange.min ||
-        (value > rule.lowerRange.max && value < rule.upperRange.min) ||
-        value > rule.upperRange.max
-      )
+      rules.every((rule) => !valueIsValid(value, rule))
     ) {
       errorRate += value;
     }
   }
 }
 console.log(errorRate);
+
+// Part 2: determine which rule maps to which position.
+
+// Only consider 'valid' tickets:
+const validTickets = tickets.filter(ticketIsValid);
+
+// Every ticket has the same number of values:
+const ticketLength = validTickets[0].length;
+
+// For each rule...
+for (const rule of rules) {
+  // ...search through the value positions...
+  for (let i = 0; i < ticketLength; i++) {
+    // ...and check to see if the rule is passed for every value in this position across all tickets...
+    if (validTickets.every((ticket) => valueIsValid(ticket[i], rule))) {
+      // ...and if it is, record this as a valid position:
+      (rule.positions = rule.positions || []).push(i);
+    }
+  }
+}
+
+// Now we can 'cheat', each rule's set of possible positions is either length === 1,
+// or can be reduced to length === 1 by removing all previously allocated positions:
+const inPositionCountOrder = rules.sort((a, b) =>
+  (a.positions?.length ?? 0) - (b.positions?.length ?? 0)
+);
+let answer = 1;
+for (const rule of inPositionCountOrder) {
+  if (rule.positions?.length === 1) {
+    const identifiedPosition = rule.positions[0];
+    console.log(`Rule - ${rule.name} - is in position: ${identifiedPosition}`);
+
+    if (rule.name.indexOf("departure") > -1) {
+      answer *= yourTicket[identifiedPosition];
+    }
+
+    inPositionCountOrder.forEach((ruleUnderModification) => {
+      ruleUnderModification.positions = ruleUnderModification.positions?.filter(
+        (position) => position !== identifiedPosition,
+      );
+    });
+  }
+}
+
+console.log(answer);
