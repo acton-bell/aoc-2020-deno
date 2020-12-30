@@ -109,12 +109,14 @@ const growGrid = (grid: ThreeDGrid) => {
   return grid;
 };
 
-const iterate = (grid: ThreeDGrid) => {
-  // 1. grow the grid
+const iterate3d = (grid: ThreeDGrid) => {
+  // 1. Grow the grid in all directions:
   const biggerGrid = growGrid(grid);
-  // 2. clone an empty copy
+
+  // 2. Clone an empty copy to store the new values:
   const nextGrid = buildGrid(grid.length, grid[0].length, grid[1].length, 0);
-  // 3. populate the clone with changes
+
+  // 3. Populate the clone with changes:
   for (let z = 0; z < biggerGrid.length; z++) {
     const slice = biggerGrid[z];
     for (let y = 0; y < slice.length; y++) {
@@ -136,24 +138,36 @@ const iterate = (grid: ThreeDGrid) => {
   return nextGrid;
 };
 
-let x = iterate([parsedInput]);
-x = iterate(x);
-x = iterate(x);
-x = iterate(x);
-x = iterate(x);
-x = iterate(x);
-let answer = 0;
-for (let z = 0; z < x.length; z++) {
-  const slice = x[z];
-  for (let y = 0; y < slice.length; y++) {
-    const row = slice[y];
-    for (let x = 0; x < row.length; x++) {
-      const cell = row[x];
-      answer += cell;
+// This is just reduce really:
+const callWithOutput = <T>(
+  func: (parameter: T) => T,
+  initial: T,
+  iterations: number,
+) => {
+  for (let i = 0; i < iterations; i++) {
+    initial = func(initial);
+  }
+
+  return initial;
+};
+
+// Again, could be just some reduce calls (and needs generalising to n dimensions).
+const countValues = (grid: ThreeDGrid) => {
+  let answer = 0;
+  for (let z = 0; z < grid.length; z++) {
+    const slice = grid[z];
+    for (let y = 0; y < slice.length; y++) {
+      const row = slice[y];
+      for (let x = 0; x < row.length; x++) {
+        const cell = row[x];
+        answer += cell;
+      }
     }
   }
-}
-console.log(answer);
+  return answer;
+};
+
+console.log(countValues(callWithOutput(iterate3d, [parsedInput], 6)));
 
 // console.log(buildGrid(1, 2, 3));
 
