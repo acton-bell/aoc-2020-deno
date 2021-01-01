@@ -208,32 +208,28 @@ const getCoordinateSystem = (dimensionality: number) => {
   // - the three items are [ ...otherCoords, - 1 ], [ ...otherCoords, 0 ], [ ...otherCoords, (+) 1 ]
 };
 
-// Gets a blank array of the right size for the given dimensionality.
-// Each element is initialised to an empty array (representing a coordinate).
-const getBlankCoordsArray = (dimensionality: number) => {
-  const output = new Array(Math.pow(3, dimensionality));
-  for (let o = 0; o < output.length; o++) {
-    output[o] = [];
-  }
-
-  return output;
-};
-
 // lets do it
 // TODO: Generalise for n-dimensions:
-const doIt = (dimensionality: number) => {
-  const coords = getBlankCoordsArray(dimensionality);
-  const basis = [-1, 0, +1];
+const doIt = (dimensionality: number, basis: number[] = [-1, 0, +1]) => {
+  // We'll use the basis length on a couple of occasions:
   const basisLength = basis.length;
+
+  // We initialise a coords array of the total required length...
+  const coords = new Array(Math.pow(basis.length, dimensionality));
+  for (let o = 0; o < coords.length; o++) {
+    // ...and with each element set to an empty array:
+    coords[o] = new Array(dimensionality);
+  }
+
+  // Then we fill the coords array with all combinations of the basis array:
   for (let c = 0; c < coords.length; c++) {
     const coord = coords[c];
     for (let d = 0; d < dimensionality; d++) {
-      coord.push(
-        basis[Math.floor(c / Math.pow(dimensionality, d)) % basisLength],
-      );
+      coord[d] =
+        basis[Math.floor(c / Math.pow(dimensionality, d)) % basisLength];
     }
   }
 
   return coords;
 };
-console.log(doIt(2));
+console.log(doIt(3, [42]));
