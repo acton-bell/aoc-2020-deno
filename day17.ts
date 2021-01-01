@@ -134,14 +134,13 @@ const iterate3d = (grid: ThreeDGrid) => {
     for (let y = 0; y < slice.length; y++) {
       const row = slice[y];
       for (let x = 0; x < row.length; x++) {
-        const cell = row[x];
-        const activeNeighbours = sumNeighbours3d(z, y, x, biggerGrid);
-        if (cell === 1) {
-          nextGrid[z][y][x] = activeNeighbours === 2 || activeNeighbours === 3
-            ? 1
-            : 0;
+        const neighbours = sumNeighbours3d(z, y, x, biggerGrid);
+        if (row[x] === 1) {
+          nextGrid[z][y][x] = neighbours === 2 || neighbours === 3 ? 1 : 0;
+        } else if (row[x] === 0) {
+          nextGrid[z][y][x] = neighbours === 3 ? 1 : 0;
         } else {
-          nextGrid[z][y][x] = activeNeighbours === 3 ? 1 : 0;
+          throw new Error("Unexpected cell value.");
         }
       }
     }
@@ -179,12 +178,62 @@ const countValues = (grid: ThreeDGrid) => {
   return answer;
 };
 
-console.log(countValues(callWithOutput(iterate3d, [parsedInput], 6)));
+// Day 17, part 1 answer:
+// console.log(countValues(callWithOutput(iterate3d, [parsedInput], 6)));
 
-// console.log(buildGrid(1, 2, 3));
+const getCoordinateSystem = (dimensionality: number) => {
+  // 1d -> position either side in a line
+  // 2d -> positions either side, on both sides, plus the combination of those
+  // 3d -> etc
+  // how to generalise this? binomial combinations?
+  // determine all positions, then remove self/initial/starting?
 
-// const x = growGrid([[[1]]]);
-// console.log(x);
-// console.log(growGrid(x));
-// const y = buildGrid(x.length, x[0].length, x[1].length, 0);
-// console.log(y);
+  // Number of coords for given dimension (inc. 'center' point):
+  // 1 ->  3
+  // 2 ->  9
+  // 3 -> 27
+  // 4 -> 81
+  // positions.length === 3^d
+  const coords = new Array(Math.pow(3, dimensionality));
+
+  // Number of points in a single coord is exactly equal to the dimensionality (i.e. [w,z,y,x]).
+
+  // Our existing implementation assumes this coords array is generated w/ offsets built in (i.e. n - 1).
+  // This doesn't lend itself to reusability, so we will instead generate just an 'offsets' array.
+  // We will then modify our neighbour-summing method accordingly.
+
+  // So, for an n-dimensional space:
+  // - we have n outer 'loops' (this suggests recursion, passing coords down the chain)
+  // - for each iteration of a given loop, we add three items to the coords array
+  // - the three items are [ ...otherCoords, - 1 ], [ ...otherCoords, 0 ], [ ...otherCoords, (+) 1 ]
+};
+
+// Gets a blank array of the right size for the given dimensionality.
+// Each element is initialised to an empty array (representing a coordinate).
+const getBlankCoordsArray = (dimensionality: number) => {
+  const output = new Array(Math.pow(3, dimensionality));
+  for (let o = 0; o < output.length; o++) {
+    output[o] = [];
+  }
+
+  return output;
+};
+
+// lets do it
+// TODO: Generalise for n-dimensions:
+const doIt = (dimensionality: number) => {
+  const coords = getBlankCoordsArray(dimensionality);
+  const basis = [-1, 0, +1];
+  const basisLength = basis.length;
+  for (let c = 0; c < coords.length; c++) {
+    const coord = coords[c];
+    for (let d = 0; d < dimensionality; d++) {
+      coord.push(
+        basis[Math.floor(c / Math.pow(dimensionality, d)) % basisLength],
+      );
+    }
+  }
+
+  return coords;
+};
+console.log(doIt(2));
