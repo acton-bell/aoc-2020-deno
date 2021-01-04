@@ -1,3 +1,5 @@
+import { generateCoordinateSystem } from "./utils.ts";
+
 export {};
 
 // The raw input from the puzzle:
@@ -179,57 +181,8 @@ const countValues = (grid: ThreeDGrid) => {
 };
 
 // Day 17, part 1 answer:
-// console.log(countValues(callWithOutput(iterate3d, [parsedInput], 6)));
+console.log(countValues(callWithOutput(iterate3d, [parsedInput], 6)));
 
-const getCoordinateSystem = (dimensionality: number) => {
-  // 1d -> position either side in a line
-  // 2d -> positions either side, on both sides, plus the combination of those
-  // 3d -> etc
-  // how to generalise this? binomial combinations?
-  // determine all positions, then remove self/initial/starting?
+console.log(generateCoordinateSystem(4, [-1, 0, 1]));
 
-  // Number of coords for given dimension (inc. 'center' point):
-  // 1 ->  3
-  // 2 ->  9
-  // 3 -> 27
-  // 4 -> 81
-  // positions.length === 3^d
-  const coords = new Array(Math.pow(3, dimensionality));
-
-  // Number of points in a single coord is exactly equal to the dimensionality (i.e. [w,z,y,x]).
-
-  // Our existing implementation assumes this coords array is generated w/ offsets built in (i.e. n - 1).
-  // This doesn't lend itself to reusability, so we will instead generate just an 'offsets' array.
-  // We will then modify our neighbour-summing method accordingly.
-
-  // So, for an n-dimensional space:
-  // - we have n outer 'loops' (this suggests recursion, passing coords down the chain)
-  // - for each iteration of a given loop, we add three items to the coords array
-  // - the three items are [ ...otherCoords, - 1 ], [ ...otherCoords, 0 ], [ ...otherCoords, (+) 1 ]
-};
-
-// lets do it
-// TODO: Generalise for n-dimensions:
-const doIt = (dimensionality: number, basis: number[] = [-1, 0, +1]) => {
-  // We'll use the basis length on a couple of occasions:
-  const basisLength = basis.length;
-
-  // We initialise a coords array of the total required length...
-  const coords = new Array(Math.pow(basis.length, dimensionality));
-  for (let o = 0; o < coords.length; o++) {
-    // ...and with each element set to an empty array:
-    coords[o] = new Array(dimensionality);
-  }
-
-  // Then we fill the coords array with all combinations of the basis array:
-  for (let c = 0; c < coords.length; c++) {
-    const coord = coords[c];
-    for (let d = 0; d < dimensionality; d++) {
-      coord[d] =
-        basis[Math.floor(c / Math.pow(dimensionality, d)) % basisLength];
-    }
-  }
-
-  return coords;
-};
-console.log(doIt(3, [42]));
+// const getCoordinateSystem = (dimensionality: number) => ;
